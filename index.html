@@ -1,214 +1,820 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Dementia Early Detection</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MindGuard — Early Memory Screening (Demo)</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f7fb;
-  margin: 0;
-  padding: 0;
-}
-header {
-  background: #58cc02;
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
-.container {
-  padding: 20px;
-}
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  background: #58cc02;
-  color: white;
-}
-button.option {
-  background: #e5e5e5;
-  color: #000;
-}
-button.option.selected {
-  background: #58cc02;
-  color: white;
-}
-.hidden {
-  display: none;
-}
-.risk-low { color: green; font-weight: bold; }
-.risk-medium { color: orange; font-weight: bold; }
-.risk-high { color: red; font-weight: bold; }
-footer {
-  text-align: center;
-  padding: 10px;
-  font-size: 14px;
-  color: #777;
-}
+  :root{
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --accent:#39b54a; /* duolingo-like green */
+    --accent-2: linear-gradient(135deg,#39b54a,#2db34a);
+    --muted:#7a7f86;
+    --danger:#ff4d4f;
+    --glass: rgba(255,255,255,0.85);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: linear-gradient(180deg,#eef6f1,#f4f7fb);
+    font-family:Inter,system-ui,Arial,sans-serif;
+    color:#111827;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:14px;
+  }
+
+  /* App frame */
+  .app{
+    max-width:460px;
+    margin:0 auto;
+    background:transparent;
+    min-height:calc(100vh - 28px);
+  }
+
+  header{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:14px;
+    border-radius:12px;
+    background:var(--card);
+    box-shadow:0 8px 20px rgba(50,70,90,0.08);
+    margin-bottom:12px;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:12px;
+    background:var(--accent);
+    display:flex;align-items:center;justify-content:center;color:white;
+    font-weight:700;font-size:20px;box-shadow:0 6px 14px rgba(57,181,74,0.22);
+  }
+  header h1{margin:0;font-size:18px}
+  header p{margin:0;color:var(--muted);font-size:13px}
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:12px;
+    box-shadow:0 6px 18px rgba(36,59,88,0.06);
+  }
+  .muted{color:var(--muted);font-size:13px}
+  input,select,textarea{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;border:1px solid #e6eef6;
+    margin-top:8px;
+    font-size:15px;
+  }
+  button{
+    border:0;padding:12px 14px;border-radius:10px;font-weight:600;
+    background:var(--accent);color:white;font-size:15px;cursor:pointer;
+    box-shadow:0 8px 18px rgba(57,181,74,0.18);
+  }
+  .btn-ghost{background:transparent;color:var(--accent);border:1px solid rgba(57,181,74,0.12);box-shadow:none}
+  .row{display:flex;gap:10px}
+  .col{flex:1}
+  .small{font-size:13px;color:var(--muted)}
+  .center{text-align:center}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#f1fff1;color:#064a05;font-weight:600}
+  .danger{background:#fff1f0;color:var(--danger);padding:8px 10px;border-radius:8px}
+
+  /* Test UI */
+  .question{
+    font-size:17px;font-weight:600;margin-bottom:8px;
+  }
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .option{
+    padding:10px;border-radius:10px;background:#f7fbfb;border:1px solid #e8f2ef;cursor:pointer;
+    text-align:center;font-weight:600;
+  }
+  .option.selected{background:var(--accent);color:white;border-color:transparent;box-shadow:0 8px 18px rgba(57,181,74,0.12)}
+
+  /* responsive single column on small width */
+  @media (max-width:440px){
+    .options{grid-template-columns:1fr}
+  }
+
+  footer{margin-top:8px;color:var(--muted);font-size:13px;text-align:center}
+
+  /* patient list */
+  .patient-card{display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;border:1px solid #eef6f1}
+  .avatar{
+    width:56px;height:56px;border-radius:10px;background:linear-gradient(180deg,#fff,#f1fff1);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:#164a2a;border:1px solid #e8f7ec;
+  }
+
+  /* history list */
+  .history-item{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:#fbfffb;margin-bottom:8px}
+  .small-muted{font-size:13px;color:#60707a}
+  .lang-switch{float:right}
+  .controls{display:flex;gap:8px;margin-top:10px}
+  .toprow{display:flex;gap:10px;align-items:center;justify-content:space-between}
+
+  .chart-wrap{padding:8px;background:linear-gradient(180deg,#ffffff,#fbfff9);border-radius:10px}
+  .note{font-size:13px;color:#556; margin-top:8px}
 </style>
 </head>
-
 <body>
+<div class="app">
 
-<header>
-<h1>Dementia Early Detection App</h1>
-<p>Early memory screening & caregiver support</p>
-</header>
+  <header>
+    <div class="logo">MG</div>
+    <div>
+      <h1 id="appTitle">MindGuard</h1>
+      <p class="muted" id="appSubtitle">Early memory screening — demo prototype</p>
+    </div>
+  </header>
 
-<div class="container">
+  <!-- Guardian sign-in -->
+  <div class="card" id="guardianCard">
+    <div class="toprow">
+      <div>
+        <div class="small">Guardian</div>
+        <div style="font-weight:700" id="guardianNameDisplay">Not set</div>
+        <div class="small-muted" id="guardianPhoneDisplay"></div>
+      </div>
+      <div class="lang-switch">
+        <select id="langSelect" onchange="setLang(this.value)">
+          <option value="en">English</option>
+          <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        </select>
+      </div>
+    </div>
 
-<!-- HOME -->
-<div class="card" id="home">
-<h2>Choose Mode</h2>
-<button onclick="startTest()">👴 Take Memory Test</button>
-<button onclick="openDashboard()">👨‍👩‍👧 Caregiver Dashboard</button>
+    <div id="guardianForm" style="margin-top:12px">
+      <input id="g_name" placeholder="Guardian name" />
+      <div class="row">
+        <input id="g_age" placeholder="Age" class="col" />
+        <input id="g_phone" placeholder="Mobile number" class="col" />
+      </div>
+      <div class="row">
+        <input id="g_state" placeholder="State" class="col" />
+        <input id="g_country" placeholder="Country" class="col" />
+      </div>
+      <div class="controls">
+        <button onclick="saveGuardian()">Save & Continue</button>
+        <button class="btn-ghost" onclick="clearGuardian()">Clear</button>
+      </div>
+      <div class="note">This demo stores all data locally on your device (no server). To show alerts, allow browser notifications when prompted.</div>
+    </div>
+  </div>
+
+  <!-- Patients / tracked people -->
+  <div class="card" id="patientsCard" style="display:none">
+    <div class="row" style="align-items:center">
+      <div style="flex:1">
+        <div class="small">Tracked persons</div>
+        <div style="font-weight:700">Your family members</div>
+      </div>
+      <button onclick="showAddPerson()">+ Add Person</button>
+    </div>
+
+    <div id="patientsList" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Add person modal area -->
+  <div class="card" id="addPersonCard" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700" id="addTitle">Add Person</div>
+      <button class="btn-ghost" onclick="hideAddPerson()">Close</button>
+    </div>
+    <input id="p_name" placeholder="Name (e.g., Grandpa Ram)" />
+    <div class="row">
+      <input id="p_age" placeholder="Age" class="col" />
+      <select id="p_relation" class="col">
+        <option value="grandparent">Grandparent</option>
+        <option value="parent">Parent</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div style="margin-top:8px">
+      <label class="small">Personalized question (optional)</label>
+      <input id="p_custom_q" placeholder="Example: What is your son's name?" />
+      <input id="p_custom_a" placeholder="Correct answer (exact text)"/>
+    </div>
+    <div class="controls">
+      <button onclick="addPerson()">Save Person</button>
+      <button class="btn-ghost" onclick="hideAddPerson()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Test area -->
+  <div class="card" id="testCard" style="display:none">
+    <div class="toprow">
+      <div>
+        <div class="small">Testing</div>
+        <div style="font-weight:700" id="testPersonName">Person</div>
+      </div>
+      <div id="testMeta" class="small-muted">10 questions • ~5 minutes</div>
+    </div>
+
+    <hr style="margin:12px 0" />
+    <div id="questionArea"></div>
+
+    <div style="margin-top:12px" id="testControls">
+      <button onclick="startTest()">Start Test</button>
+    </div>
+    <div id="testNote" class="note">Tip: Speak calmly to the person. The app compares answers to expected ones; it's a screening tool — not a diagnosis.</div>
+  </div>
+
+  <!-- Results & graph -->
+  <div class="card" id="resultCard" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="small">Latest Result</div>
+        <div style="font-weight:700" id="resultPersonName">—</div>
+      </div>
+      <div>
+        <div id="riskPill" class="pill">Risk</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <div class="small-muted">Score</div>
+          <div style="font-size:22px;font-weight:800" id="scoreDisplay">0/10</div>
+        </div>
+        <div style="flex:1">
+          <div class="small-muted">Date</div>
+          <div id="scoreDate" class="small-muted"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px" class="chart-wrap">
+      <canvas id="trendChart" height="110"></canvas>
+    </div>
+
+    <div style="margin-top:12px" class="controls">
+      <button onclick="exportCSV()">Download History (CSV)</button>
+      <button class="btn-ghost" onclick="shareReport()">Share Report</button>
+    </div>
+
+    <div id="alertBox" style="margin-top:12px"></div>
+  </div>
+
+  <footer>
+    <div class="small muted">Prototype for Innovation & Design Thinking — store is local, no server. Upgrade options: secure backend, SMS API, secure login.</div>
+  </footer>
 </div>
-
-<!-- TEST -->
-<div class="card hidden" id="test">
-<h2 id="question"></h2>
-<div id="options"></div>
-<button onclick="nextQuestion()">Next</button>
-</div>
-
-<!-- RESULT -->
-<div class="card hidden" id="result">
-<h2>Test Result</h2>
-<p>Your Score: <span id="score"></span></p>
-<p>Risk Level: <span id="risk"></span></p>
-<button onclick="goHome()">Back to Home</button>
-</div>
-
-<!-- DASHBOARD -->
-<div class="card hidden" id="dashboard">
-<h2>Caregiver Dashboard</h2>
-<p>Last Score: <span id="dScore"></span></p>
-<p>Risk Status: <span id="dRisk"></span></p>
-<button onclick="goHome()">Back to Home</button>
-</div>
-
-</div>
-
-<footer>
-Innovation & Design Thinking Project | VTU
-</footer>
 
 <script>
-let questions = [
-  {
-    q: "What is your son's name?",
-    options: ["Ramesh", "Suresh", "Mahesh"],
-    answer: 0
+/* ===========================
+   MindGuard - Single-file Premium Prototype
+   - Save in index.html and host on GitHub Pages
+   - All data stored in localStorage
+   - Chart.js used for graphs (CDN)
+   =========================== */
+
+/* ---------- Localization ---------- */
+const LOCALE = {
+  en: {
+    appTitle: "MindGuard",
+    appSubtitle: "Early memory screening — demo prototype",
+    guardianSaved: "Guardian saved",
+    alertDecline: "Sudden memory decline detected for",
+    testStarted: "Test started",
+    testCompleted: "Test completed",
+    riskLow: "Low risk",
+    riskMedium: "Moderate risk",
+    riskHigh: "High risk",
+    downloadCSV: "Download History (CSV)",
+    shareReport: "Share Report",
+    noData: "No history yet"
   },
-  {
-    q: "Which city do you live in?",
-    options: ["Bengaluru", "Mumbai", "Delhi"],
-    answer: 0
-  },
-  {
-    q: "Which object is used to tell time?",
-    options: ["Clock", "Spoon", "Chair"],
-    answer: 0
+  kn: {
+    appTitle: "ಮೈಂಡ್‌ಗಾರ್ಡ್",
+    appSubtitle: "ಆರಂಭಿಕ ಸ್ಮರಣಾ ಪರೀಕ್ಷೆ — ಡೆಮೊ",
+    guardianSaved: "ಗಾರ್ಡಿಯನ್ ಸೇವ್ ಆಗಿದೆ",
+    alertDecline: "ಸೇರಿದ ಸ್ಮರಣೆ ಕುಸಿತ ಕಂಡುಬಂದಿದೆ:",
+    testStarted: "ಪರೀಕ್ಷೆ ಪ್ರಾರಂಭ<br>",
+    testCompleted: "ಪರೀಕ್ಷೆ ಮುಗಿದಿದೆ",
+    riskLow: "ಕೆಲಸದ ಅಪಾಯ ಕಡಿಮೆ",
+    riskMedium: "ಮಧ್ಯಮ ಅಪಾಯ",
+    riskHigh: "ಹೆಚ್ಚು ಅಪಾಯ",
+    downloadCSV: "ಇತಿಹಾಸ (CSV) ಡೌನ್‌ಲೋಡ್",
+    shareReport: "ರಿಪೋರ್ಟ್ ಹಂಚಿಕೊಳ್ಳಿ",
+    noData: "ಇತಿಹಾಸವಿಲ್ಲ"
   }
+};
+
+let LANG = localStorage.getItem('mg_lang') || 'en';
+document.getElementById('langSelect').value = LANG;
+applyLocale();
+
+/* ---------- Questions bank ---------- 
+   Each question has:
+   - type: 'text'|'image'|'match'
+   - q: {en,kn}  question string
+   - options: array of {en,kn,value, image?}
+   - answer: exact value (string)
+*/
+const BASE_QUESTIONS = [
+  {type:'text', q:{en:"What is your son's name?", kn:"ನಿಮ್ಮ ಮಗನ ಹೆಸರು ಏನು?"}, options:[
+    {en:"Ramesh",kn:"ರಮೇಶ್",val:"ramesh"},
+    {en:"Suresh",kn:"ಸುರೇಶ್",val:"suresh"},
+    {en:"Mahesh",kn:"ಮಹೇಶ್",val:"mahesh"}
+  ], answer:"ramesh"},
+  {type:'text', q:{en:"Which city do you live in?", kn:"ನೀವು ಯಾವ ನಗರದಲ್ಲಿ ವಾಸಿಸುತ್ತೀರಿ?"}, options:[
+    {en:"Bengaluru",kn:"ಬೆಂಗಳೂರು",val:"bengaluru"},
+    {en:"Mumbai",kn:"ಮುಂಬೈ",val:"mumbai"},
+    {en:"Delhi",kn:"ದಿಲ್ಲಿ",val:"delhi"}
+  ], answer:"bengaluru"},
+  {type:'image', q:{en:"Identify this object", kn:"ಈ ವಸ್ತುವನ್ನು ಗುರುತಿಸಿ"}, options:[
+    {en:"Watch",kn:"ಗಡಿಯಾರ",val:"watch", img:"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='120' height='120' rx='12' fill='%23fff6e5' /><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='30' fill='%23000000'>🕰️</text></svg>"},
+    {en:"Banana",kn:"ಕೆಳೆಯ",val:"banana", img:"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='120' height='120' rx='12' fill='%23fff' /><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='38' fill='%23000000'>🍌</text></svg>"},
+    {en:"Chair",kn:"ಕಿಂಗಣಿ",val:"chair", img:"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='120' height='120' rx='12' fill='%23fff5f5' /><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='34' fill='%23000000'>🪑</text></svg>"}
+  ], answer:"banana"},
+  {type:'text', q:{en:"What day comes after Monday?", kn:"ಸೋಮವಾರದ ನಂತರ ಯಾವ ದಿನ ಬರುತ್ತದೆ?"}, options:[
+    {en:"Tuesday",kn:"ಮಂಗಳವಾರ",val:"tuesday"},
+    {en:"Sunday",kn:"ಭಾನುವಾರ",val:"sunday"},
+    {en:"Friday",kn:"ಶುಕ್ರವಾರ",val:"friday"}
+  ], answer:"tuesday"},
+  {type:'text', q:{en:"What is 5 + 3?", kn:"5 + 3 = ?"}, options:[
+    {en:"8",kn:"8",val:"8"},
+    {en:"15",kn:"15",val:"15"},
+    {en:"3",kn:"3",val:"3"}
+  ], answer:"8"},
+  {type:'text', q:{en:"Which season is coldest?", kn:"ಏನೆಲ್ಲಾ ಋತುವುಗಳಲ್ಲಿ ಯಾವುದು ಅತ್ಯಂತ ಶೀತವಾಗಿರುತ್ತದೆ?"}, options:[
+    {en:"Winter",kn:"ಚಳಿಗಾಲ",val:"winter"},
+    {en:"Summer",kn:"ಬೆಣ್ಣೆ",val:"summer"},
+    {en:"Monsoon",kn:"ಮಾನ್ಸೂನ್",val:"monsoon"}
+  ], answer:"winter"},
+  {type:'text', q:{en:"What animal says meow?", kn:"ಮಿಯಾವ್ ಎನ್ನುವುದು ಯಾವ ಪ್ರಾಣಿ?"}, options:[
+    {en:"Cat",kn:"ಬೆಕ್ಕು",val:"cat"},
+    {en:"Dog",kn:"ಕೋತಿ",val:"dog"},
+    {en:"Cow",kn:"ಹಸು",val:"cow"}
+  ], answer:"cat"},
+  {type:'text', q:{en:"How many fingers in one hand?", kn:"ಒಂದು ಕೈಯಲ್ಲಿ ಎಷ್ಟು ಬೆರಳು ಗಳು ಇವೆ?"}, options:[
+    {en:"5",kn:"5",val:"5"},
+    {en:"10",kn:"10",val:"10"},
+    {en:"8",kn:"8",val:"8"}
+  ], answer:"5"},
+  {type:'text', q:{en:"What color is the sky?", kn:"ಆಕಾಶದ ಬಣ್ಣ ಏನು?"}, options:[
+    {en:"Blue",kn:"ನೀಲಿ",val:"blue"},
+    {en:"Green",kn:"ಹಸಿರು",val:"green"},
+    {en:"Red",kn:"ಕೆಂಪು",val:"red"}
+  ], answer:"blue"},
+  {type:'text', q:{en:"What is your country name?", kn:"ನಿಮ್ಮ ದೇಶದ ಹೆಸರು ಯಾವುದು?"}, options:[
+    {en:"India",kn:"ಭಾರತ",val:"india"},
+    {en:"Nepal",kn:"ನೇಪಾಳ್",val:"nepal"},
+    {en:"Sri Lanka",kn:"ಶ್ರೀಲಂಕಾ",val:"srilanka"}
+  ], answer:"india"},
 ];
 
-let current = 0;
-let score = 0;
-let selected = null;
+/* ---------- Helper / Storage ---------- */
+const STORAGE = {
+  guardian: 'mg_guardian',
+  people: 'mg_people',
+  history: 'mg_history', // object keyed by personId -> array of results
+  lang: 'mg_lang'
+};
 
-function startTest() {
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("test").classList.remove("hidden");
-  showQuestion();
+function uid(prefix='id'){ return prefix+Math.random().toString(36).slice(2,9); }
+
+/* ---------- Initialization ---------- */
+let guardian = loadJSON(STORAGE.guardian) || null;
+let people = loadJSON(STORAGE.people) || [];
+let history = loadJSON(STORAGE.history) || {}; // {personId: [{date,score,details}]}
+
+renderGuardianUI();
+renderPeople();
+
+/* ---------- Language ---------- */
+function applyLocale(){
+  const L = LOCALE[LANG];
+  document.getElementById('appTitle').innerText = L.appTitle;
+  document.getElementById('appSubtitle').innerText = L.appSubtitle;
+  // any other UI text updates can be done here
+  localStorage.setItem(STORAGE.lang, LANG);
+}
+function setLang(v){ LANG = v; applyLocale(); }
+
+/* ---------- Guardian functions ---------- */
+function saveGuardian(){
+  const name=document.getElementById('g_name').value.trim();
+  const age=document.getElementById('g_age').value.trim();
+  const phone=document.getElementById('g_phone').value.trim();
+  const state=document.getElementById('g_state').value.trim();
+  const country=document.getElementById('g_country').value.trim();
+
+  if(!name || !phone){ alert("Please enter name and phone"); return; }
+  guardian = { id: uid('g_'), name, age, phone, state, country };
+  localStorage.setItem(STORAGE.guardian, JSON.stringify(guardian));
+  renderGuardianUI();
+  document.getElementById('patientsCard').style.display='block';
+  notifyUser(LOCALE[LANG].guardianSaved);
+}
+function clearGuardian(){
+  guardian = null;
+  localStorage.removeItem(STORAGE.guardian);
+  renderGuardianUI();
+  document.getElementById('patientsCard').style.display='none';
+}
+function renderGuardianUI(){
+  if(guardian){
+    document.getElementById('guardianNameDisplay').innerText = guardian.name;
+    document.getElementById('guardianPhoneDisplay').innerText = guardian.phone + (guardian.state ? ' • ' + guardian.state : '');
+    // hide form
+    document.getElementById('guardianForm').style.display = 'none';
+    document.getElementById('patientsCard').style.display = 'block';
+  } else {
+    document.getElementById('guardianNameDisplay').innerText = 'Not set';
+    document.getElementById('guardianPhoneDisplay').innerText = '';
+    document.getElementById('guardianForm').style.display = 'block';
+    document.getElementById('patientsCard').style.display = 'none';
+  }
 }
 
-function showQuestion() {
-  selected = null;
-  let q = questions[current];
-  document.getElementById("question").innerText = q.q;
-  let optDiv = document.getElementById("options");
-  optDiv.innerHTML = "";
-  q.options.forEach((opt, i) => {
-    let btn = document.createElement("button");
-    btn.className = "option";
-    btn.innerText = opt;
-    btn.onclick = () => selectOption(btn, i);
-    optDiv.appendChild(btn);
+/* ---------- People (tracked persons) ---------- */
+function showAddPerson(){
+  document.getElementById('addPersonCard').style.display='block';
+}
+function hideAddPerson(){
+  document.getElementById('addPersonCard').style.display='none';
+  // clear fields
+  ['p_name','p_age','p_custom_q','p_custom_a'].forEach(id=>document.getElementById(id).value='');
+}
+function addPerson(){
+  const name=document.getElementById('p_name').value.trim();
+  const age=document.getElementById('p_age').value.trim();
+  const relation=document.getElementById('p_relation').value;
+  const custom_q=document.getElementById('p_custom_q').value.trim();
+  const custom_a=document.getElementById('p_custom_a').value.trim();
+
+  if(!name) { alert('Enter a name'); return; }
+  const id = uid('p_');
+  const p = { id, name, age, relation, custom_q, custom_a };
+  people.push(p);
+  localStorage.setItem(STORAGE.people, JSON.stringify(people));
+  history[id] = history[id] || [];
+  localStorage.setItem(STORAGE.history, JSON.stringify(history));
+  hideAddPerson();
+  renderPeople();
+}
+function renderPeople(){
+  const list = document.getElementById('patientsList');
+  list.innerHTML='';
+  if(people.length===0){
+    list.innerHTML = '<div class="small-muted">No tracked persons added. Click + Add Person</div>';
+    return;
+  }
+  people.forEach(p=>{
+    const div = document.createElement('div');
+    div.className='patient-card';
+    div.innerHTML = `
+      <div class="avatar">${p.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-weight:700">${p.name}</div>
+        <div class="small-muted">${p.relation} • Age ${p.age || '-'}</div>
+        <div style="margin-top:8px" class="controls">
+          <button onclick="openTest('${p.id}')">Run Test</button>
+          <button class="btn-ghost" onclick="viewResults('${p.id}')">View</button>
+          <button class="btn-ghost" onclick="removePerson('${p.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
   });
 }
 
-function selectOption(btn, i) {
-  selected = i;
-  document.querySelectorAll(".option").forEach(b => b.classList.remove("selected"));
-  btn.classList.add("selected");
+/* ---------- Remove person ---------- */
+function removePerson(id){
+  if(!confirm('Remove this person and all history?')) return;
+  people = people.filter(x=>x.id!==id);
+  delete history[id];
+  localStorage.setItem(STORAGE.people, JSON.stringify(people));
+  localStorage.setItem(STORAGE.history, JSON.stringify(history));
+  renderPeople();
 }
 
-function nextQuestion() {
-  if (selected === null) return alert("Please select an answer");
-  if (selected === questions[current].answer) score++;
-  current++;
-  if (current < questions.length) {
-    showQuestion();
+/* ---------- Test flow ---------- */
+let currentPerson = null;
+let testQuestions = [];
+let currentIndex = 0;
+let answers = [];
+
+function openTest(personId){
+  currentPerson = people.find(p=>p.id===personId);
+  // Prepare questions: base + optional custom
+  testQuestions = shuffleArray(BASE_QUESTIONS).slice(0,9); // 9 base
+  // add personalized question if present
+  if(currentPerson.custom_q && currentPerson.custom_a){
+    const custom = { type:'text', q:{en:currentPerson.custom_q, kn:currentPerson.custom_q}, options:[
+      {en:currentPerson.custom_a, kn:currentPerson.custom_a, val: currentPerson.custom_a.toString().toLowerCase()},
+      {en:'Option 2', kn:'ಆಯ್ಕೆ 2', val:'opt2'},
+      {en:'Option 3', kn:'ಆಯ್ಕೆ 3', val:'opt3'}
+    ], answer: currentPerson.custom_a.toString().toLowerCase() };
+    // replace last question with custom to keep total 10
+    testQuestions[testQuestions.length-1] = custom;
   } else {
+    // ensure 10 total: pick next
+    const extra = BASE_QUESTIONS[(Math.floor(Math.random()*BASE_QUESTIONS.length))];
+    testQuestions.push(extra);
+  }
+  // Keep deterministic local language mapping
+  currentIndex = 0; answers = [];
+  // UI
+  document.getElementById('testCard').style.display='block';
+  document.getElementById('resultCard').style.display='none';
+  updateTestUI();
+}
+
+function updateTestUI(){
+  const area = document.getElementById('questionArea');
+  area.innerHTML = '';
+  if(currentIndex===0){
+    area.innerHTML = `<div class="center small-muted" style="margin-bottom:8px">${LOCALE[LANG].testStarted}</div>
+      <div class="center"><button onclick="beginQuestion()">Begin</button></div>`;
+    document.getElementById('testControls').style.display='none';
+    return;
+  }
+  // else show question (not used)
+}
+
+function beginQuestion(){
+  currentIndex = 0; answers = [];
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = testQuestions[currentIndex];
+  const area = document.getElementById('questionArea');
+  area.innerHTML = '';
+  // Question title
+  const qText = (q.q && q.q[LANG]) || q.q.en;
+  const elQ = document.createElement('div');
+  elQ.className = 'question';
+  elQ.innerText = `${currentIndex+1}. ${qText}`;
+  area.appendChild(elQ);
+
+  // Options (images supported)
+  const optWrap = document.createElement('div');
+  optWrap.className='options';
+  // shuffle options copy
+  const optCopy = shuffleArray(q.options.slice());
+  optCopy.forEach(opt=>{
+    const o = document.createElement('div');
+    o.className='option';
+    if(opt.img){
+      const img = document.createElement('img');
+      img.src = opt.img;
+      img.style.width='100%';
+      img.style.borderRadius='8px';
+      img.style.marginBottom='6px';
+      o.appendChild(img);
+    }
+    const txt = document.createElement('div');
+    txt.innerText = opt[LANG] || opt.en;
+    o.appendChild(txt);
+    o.onclick = ()=>{
+      document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));
+      o.classList.add('selected');
+      // store selection value
+      answers[currentIndex] = opt.val.toString().toLowerCase();
+      setTimeout(()=>nextQuestion(), 350);
+    };
+    optWrap.appendChild(o);
+  });
+  area.appendChild(optWrap);
+
+  // progress
+  const prog = document.createElement('div');
+  prog.className='small-muted';
+  prog.style.marginTop='8px';
+  prog.innerText = `Question ${currentIndex+1} of ${testQuestions.length}`;
+  area.appendChild(prog);
+}
+
+function nextQuestion(){
+  // if not answered, ignore
+  if(typeof answers[currentIndex] === 'undefined'){ alert('Please select an answer'); return; }
+  currentIndex++;
+  if(currentIndex >= testQuestions.length){
     finishTest();
-  }
-}
-
-function finishTest() {
-  document.getElementById("test").classList.add("hidden");
-  document.getElementById("result").classList.remove("hidden");
-
-  let riskText = "";
-  let riskClass = "";
-
-  if (score === questions.length) {
-    riskText = "Low Risk";
-    riskClass = "risk-low";
-  } else if (score === 1) {
-    riskText = "Medium Risk";
-    riskClass = "risk-medium";
   } else {
-    riskText = "High Risk";
-    riskClass = "risk-high";
+    renderQuestion();
+  }
+}
+
+/* ---------- Scoring and detection ---------- */
+function finishTest(){
+  // Score = count correct answers (compare to answer property)
+  let score = 0;
+  const details = [];
+  for(let i=0;i<testQuestions.length;i++){
+    const q = testQuestions[i];
+    const given = (answers[i]||'').toString().toLowerCase().trim();
+    const correct = (q.answer||'').toString().toLowerCase().trim();
+    const ok = given === correct;
+    if(ok) score++;
+    details.push({q: q.q[LANG]||q.q.en, given, correct, ok});
   }
 
-  document.getElementById("score").innerText = score + "/" + questions.length;
-  let riskSpan = document.getElementById("risk");
-  riskSpan.innerText = riskText;
-  riskSpan.className = riskClass;
+  // Save to history
+  const entry = { date: new Date().toISOString(), score, details };
+  history[currentPerson.id] = history[currentPerson.id] || [];
+  history[currentPerson.id].push(entry);
+  localStorage.setItem(STORAGE.history, JSON.stringify(history));
 
-  localStorage.setItem("score", score);
-  localStorage.setItem("risk", riskText);
+  // Show results UI
+  showResultUI(entry);
+  // After saving, run trend analysis
+  setTimeout(()=>detectTrendAndAlert(currentPerson.id), 300);
 }
 
-function openDashboard() {
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-  document.getElementById("dScore").innerText = localStorage.getItem("score") || "No data";
-  document.getElementById("dRisk").innerText = localStorage.getItem("risk") || "No data";
+/* ---------- Result UI ---------- */
+let chartInstance = null;
+function showResultUI(entry){
+  document.getElementById('resultCard').style.display='block';
+  document.getElementById('testCard').style.display='none';
+  document.getElementById('resultPersonName').innerText = currentPerson.name;
+  document.getElementById('scoreDisplay').innerText = `${entry.score}/${testQuestions.length}`;
+  document.getElementById('scoreDate').innerText = (new Date(entry.date)).toLocaleString();
+  // risk pill
+  const risk = computeRisk(entry.score);
+  const pill = document.getElementById('riskPill');
+  pill.innerText = LOCALE[LANG][risk.key];
+  pill.style.background = risk.colorBg || 'var(--card)';
+  pill.style.color = risk.colorText || '#000';
+
+  // draw chart (history)
+  drawTrendChart(history[currentPerson.id] || []);
 }
 
-function goHome() {
-  current = 0;
-  score = 0;
-  document.querySelectorAll(".card").forEach(c => c.classList.add("hidden"));
-  document.getElementById("home").classList.remove("hidden");
+/* simple risk mapping */
+function computeRisk(score){
+  const total = testQuestions.length || 10;
+  const pct = (score/total)*100;
+  if(pct >= 80) return {key:'riskLow', colorBg:'#e7f9ee', colorText:'#09621d'};
+  if(pct >= 50) return {key:'riskMedium', colorBg:'#fff7e6', colorText:'#7a4b00'};
+  return {key:'riskHigh', colorBg:'#fff0f0', colorText:'#a30b0b'};
 }
+
+/* ---------- Trend analysis & alerting ----------
+   Strategy:
+   - Take history array of last N tests
+   - Compute moving average of previous tests (excluding last)
+   - If last score falls more than threshold (e.g., >=3 points) compared to previous average,
+     or slope negative strongly => raise alert.
+*/
+function detectTrendAndAlert(personId){
+  const arr = history[personId] || [];
+  if(arr.length < 3) return; // need some data
+  const last = arr[arr.length-1].score;
+  const prev = arr.slice(0, -1).map(x=>x.score);
+  const prevAvg = prev.reduce((a,b)=>a+b,0)/prev.length;
+  const diff = Math.round(prevAvg - last);
+  // threshold: drop >=3 points OR last < 50% and drop >=2
+  const threshold = 3;
+  if(diff >= threshold || (last < (testQuestions.length*0.5) && diff>=2)){
+    // show on page
+    const el = document.getElementById('alertBox');
+    el.innerHTML = `<div class="danger">⚠ ${LOCALE[LANG].alertDecline} ${currentPerson.name}. Consider medical evaluation.</div>`;
+    // notification
+    notifyUser(`${LOCALE[LANG].alertDecline} ${currentPerson.name}. Score dropped by ${diff} points.`);
+    // also prepare SMS quick action (opens phone's SMS app)
+    if(guardian && guardian.phone){
+      const smsBody = encodeURIComponent(`Alert: ${currentPerson.name} (monitored) shows sudden memory decline. Please consult a physician. Score dropped by ${diff} points.`);
+      const smsLink = `sms:${guardian.phone}?body=${smsBody}`;
+      el.innerHTML += `<div style="margin-top:8px"><a href="${smsLink}"><button class="btn-ghost">Open SMS to guardian</button></a></div>`;
+    }
+  } else {
+    document.getElementById('alertBox').innerHTML = '';
+  }
+}
+
+/* ---------- Chart drawing ---------- */
+function drawTrendChart(hist){
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  const labels = hist.map(h => (new Date(h.date)).toLocaleDateString());
+  const data = hist.map(h => h.score);
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Score', data, fill:true, backgroundColor:'rgba(57,181,74,0.12)', borderColor:'#37a93f', tension:0.3 }]},
+    options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ suggestedMin:0, suggestedMax:testQuestions.length||10 } } }
+  });
+}
+
+/* ---------- Export / Share ---------- */
+function exportCSV(){
+  if(!currentPerson) return alert('Open a person result first.');
+  const hist = history[currentPerson.id] || [];
+  if(hist.length===0) return alert('No history to export');
+  let csv = 'date,score\\n';
+  hist.forEach(h=>{
+    csv += `${h.date},${h.score}\\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download = `${currentPerson.name.replace(/\\s+/g,'_')}_history.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function shareReport(){
+  if(!currentPerson) return alert('Open a person result first.');
+  const hist = history[currentPerson.id] || [];
+  if(hist.length===0) return alert('No history to share');
+  const text = `${currentPerson.name} - Memory test history:\\n` + hist.map(h => `${(new Date(h.date)).toLocaleString()}: ${h.score}`).join('\\n');
+  if(navigator.share){
+    try{ await navigator.share({title:'MindGuard Report', text}); } catch(e){}
+  } else {
+    // fallback: copy to clipboard
+    await navigator.clipboard.writeText(text);
+    alert('Report copied to clipboard. You can paste and share.');
+  }
+}
+
+/* ---------- View results of person ---------- */
+function viewResults(personId){
+  currentPerson = people.find(p=>p.id===personId);
+  document.getElementById('testCard').style.display='none';
+  document.getElementById('resultCard').style.display='block';
+  // set UI values
+  document.getElementById('resultPersonName').innerText = currentPerson.name;
+  const hist = history[currentPerson.id] || [];
+  if(hist.length===0){
+    document.getElementById('scoreDisplay').innerText = LOCALE[LANG].noData;
+    document.getElementById('scoreDate').innerText = '';
+    document.getElementById('riskPill').innerText = '';
+    drawTrendChart(hist);
+    return;
+  }
+  const last = hist[hist.length-1];
+  // Render last
+  document.getElementById('scoreDisplay').innerText = `${last.score}/${testQuestions.length || 10}`;
+  document.getElementById('scoreDate').innerText = (new Date(last.date)).toLocaleString();
+  // compute risk
+  const r = computeRisk(last.score);
+  const pill = document.getElementById('riskPill');
+  pill.innerText = LOCALE[LANG][r.key];
+  pill.style.background = r.colorBg || '#fff';
+  pill.style.color = r.colorText || '#000';
+  // draw chart
+  drawTrendChart(hist);
+  // analyze for decline after viewing
+  detectTrendAndAlert(currentPerson.id);
+}
+
+/* ---------- Utility functions ---------- */
+function loadJSON(key){ try{ return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } }
+function shuffleArray(a){ return a.sort(()=>Math.random()-0.5); }
+
+/* ---------- Notifications ---------- */
+function notifyUser(message){
+  // Show on-page small notification
+  // Request permission first time
+  try{
+    if(Notification && Notification.permission === "granted"){
+      new Notification("MindGuard", { body: message, icon: '' });
+    } else if(Notification && Notification.permission !== "denied"){
+      Notification.requestPermission().then(perm=>{
+        if(perm === "granted") new Notification("MindGuard", { body: message });
+      });
+    }
+  } catch(e){
+    // ignore
+  }
+  // Also show in-app toast-like (simple)
+  const header = document.querySelector('header');
+  const n = document.createElement('div');
+  n.style.position='fixed'; n.style.left='50%'; n.style.transform='translateX(-50%)';
+  n.style.bottom='22px'; n.style.background='rgba(0,0,0,0.8)'; n.style.color='white'; n.style.padding='10px 14px';
+  n.style.borderRadius='999px'; n.style.zIndex=9999; n.style.fontSize='14px';
+  n.innerText = message;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 4500);
+}
+
+/* ---------- Start app state ---------- */
+(function init(){
+  // set lang
+  LANG = localStorage.getItem(STORAGE.lang) || LANG;
+  document.getElementById('langSelect').value = LANG;
+  applyLocale();
+  // render stored people & guardian
+  guardian = loadJSON(STORAGE.guardian) || null;
+  people = loadJSON(STORAGE.people) || [];
+  history = loadJSON(STORAGE.history) || {};
+  renderGuardianUI();
+  renderPeople();
+})();
+
 </script>
-
 </body>
 </html>
-
