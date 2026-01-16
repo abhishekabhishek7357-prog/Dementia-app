@@ -2,179 +2,213 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dementia Memory Test</title>
+<title>Dementia Early Detection</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
+body {
   font-family: Arial, sans-serif;
-  background:#f4f6f8;
-  margin:0;
-  padding:15px;
+  background: #f5f7fb;
+  margin: 0;
+  padding: 0;
 }
-h2{text-align:center}
-.card{
-  background:white;
-  padding:15px;
-  margin-bottom:15px;
-  border-radius:10px;
-  box-shadow:0 0 10px rgba(0,0,0,0.1);
+header {
+  background: #58cc02;
+  color: white;
+  padding: 20px;
+  text-align: center;
 }
-button{
-  padding:10px;
-  width:100%;
-  background:#007bff;
-  color:white;
-  border:none;
-  border-radius:6px;
-  font-size:16px;
+.container {
+  padding: 20px;
 }
-select,input{
-  width:100%;
-  padding:8px;
-  margin:5px 0;
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-.alert{
-  background:#ffcccc;
-  padding:10px;
-  border-radius:6px;
-  margin-top:10px;
-  color:#900;
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #58cc02;
+  color: white;
 }
-canvas{width:100%}
+button.option {
+  background: #e5e5e5;
+  color: #000;
+}
+button.option.selected {
+  background: #58cc02;
+  color: white;
+}
+.hidden {
+  display: none;
+}
+.risk-low { color: green; font-weight: bold; }
+.risk-medium { color: orange; font-weight: bold; }
+.risk-high { color: red; font-weight: bold; }
+footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
+  color: #777;
+}
 </style>
 </head>
 
 <body>
 
-<h2 id="title">Memory Assessment Test</h2>
+<header>
+<h1>Dementia Early Detection App</h1>
+<p>Early memory screening & caregiver support</p>
+</header>
 
-<div class="card">
-<select id="lang" onchange="changeLang()">
-  <option value="en">English</option>
-  <option value="kn">Kannada</option>
-</select>
+<div class="container">
+
+<!-- HOME -->
+<div class="card" id="home">
+<h2>Choose Mode</h2>
+<button onclick="startTest()">👴 Take Memory Test</button>
+<button onclick="openDashboard()">👨‍👩‍👧 Caregiver Dashboard</button>
 </div>
 
-<div class="card" id="guardianCard">
-<h3 id="gTitle">Guardian Details</h3>
-<input id="gname" placeholder="Guardian Name">
-<input id="gage" placeholder="Age">
-<input id="gphone" placeholder="Phone Number">
-<input id="gstate" placeholder="State">
-<input id="gcountry" placeholder="Country">
-<button onclick="saveGuardian()">Save Guardian</button>
+<!-- TEST -->
+<div class="card hidden" id="test">
+<h2 id="question"></h2>
+<div id="options"></div>
+<button onclick="nextQuestion()">Next</button>
 </div>
 
-<div class="card" id="testCard" style="display:none">
-<h3 id="qTitle">Test Questions</h3>
-<div id="questions"></div>
-<button onclick="submitTest()">Submit Test</button>
+<!-- RESULT -->
+<div class="card hidden" id="result">
+<h2>Test Result</h2>
+<p>Your Score: <span id="score"></span></p>
+<p>Risk Level: <span id="risk"></span></p>
+<button onclick="goHome()">Back to Home</button>
 </div>
 
-<div class="card" id="resultCard" style="display:none">
-<h3 id="rTitle">Result Analysis</h3>
-<p id="scoreText"></p>
-<canvas id="chart"></canvas>
-<div id="alertBox"></div>
+<!-- DASHBOARD -->
+<div class="card hidden" id="dashboard">
+<h2>Caregiver Dashboard</h2>
+<p>Last Score: <span id="dScore"></span></p>
+<p>Risk Status: <span id="dRisk"></span></p>
+<button onclick="goHome()">Back to Home</button>
 </div>
+
+</div>
+
+<footer>
+Innovation & Design Thinking Project | VTU
+</footer>
 
 <script>
-let language="en";
-
-const text={
-en:{
- title:"Memory Assessment Test",
- gTitle:"Guardian Details",
- qTitle:"Answer the following questions",
- rTitle:"Result Analysis"
-},
-kn:{
- title:"ಸ್ಮರಣಾ ಪರೀಕ್ಷೆ",
- gTitle:"ಗಾರ್ಡಿಯನ್ ವಿವರಗಳು",
- qTitle:"ಈ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ",
- rTitle:"ಫಲಿತಾಂಶ ವಿಶ್ಲೇಷಣೆ"
-}
-};
-
-const questions=[
- {q:{en:"What is your son's name?",kn:"ನಿಮ್ಮ ಮಗನ ಹೆಸರು ಏನು?"},a:"ram"},
- {q:{en:"Which city do you live in?",kn:"ನೀವು ಯಾವ ನಗರದಲ್ಲಿ ವಾಸಿಸುತ್ತೀರಿ?"},a:"bengaluru"},
- {q:{en:"Identify this object: 🕰",kn:"ಈ ವಸ್ತುವನ್ನು ಗುರುತಿಸಿ: 🕰"},a:"clock"},
- {q:{en:"What day comes after Monday?",kn:"ಸೋಮವಾರದ ನಂತರ ಯಾವ ದಿನ?"},a:"tuesday"},
- {q:{en:"What is 5 + 3?",kn:"5 + 3 ಎಷ್ಟು?"},a:"8"},
- {q:{en:"Which season is coldest?",kn:"ಅತೀ ಚಳಿಯಾದ ಋತು?"},a:"winter"},
- {q:{en:"What animal says meow?",kn:"ಮಿಯಾವ್ ಎನ್ನುವ ಪ್ರಾಣಿ?"},a:"cat"},
- {q:{en:"How many fingers in one hand?",kn:"ಒಂದು ಕೈಯಲ್ಲಿ ಎಷ್ಟು ಬೆರಳುಗಳು?"},a:"5"},
- {q:{en:"What color is the sky?",kn:"ಆಕಾಶದ ಬಣ್ಣ ಏನು?"},a:"blue"},
- {q:{en:"What is your country name?",kn:"ನಿಮ್ಮ ದೇಶದ ಹೆಸರು?"},a:"india"}
+let questions = [
+  {
+    q: "What is your son's name?",
+    options: ["Ramesh", "Suresh", "Mahesh"],
+    answer: 0
+  },
+  {
+    q: "Which city do you live in?",
+    options: ["Bengaluru", "Mumbai", "Delhi"],
+    answer: 0
+  },
+  {
+    q: "Which object is used to tell time?",
+    options: ["Clock", "Spoon", "Chair"],
+    answer: 0
+  }
 ];
 
-function changeLang(){
- language=document.getElementById("lang").value;
- document.getElementById("title").innerText=text[language].title;
- document.getElementById("gTitle").innerText=text[language].gTitle;
- document.getElementById("qTitle").innerText=text[language].qTitle;
- document.getElementById("rTitle").innerText=text[language].rTitle;
- loadQuestions();
+let current = 0;
+let score = 0;
+let selected = null;
+
+function startTest() {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("test").classList.remove("hidden");
+  showQuestion();
 }
 
-function saveGuardian(){
- localStorage.setItem("guardian",JSON.stringify({
-  name:gname.value,phone:gphone.value
- }));
- document.getElementById("testCard").style.display="block";
- loadQuestions();
+function showQuestion() {
+  selected = null;
+  let q = questions[current];
+  document.getElementById("question").innerText = q.q;
+  let optDiv = document.getElementById("options");
+  optDiv.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    let btn = document.createElement("button");
+    btn.className = "option";
+    btn.innerText = opt;
+    btn.onclick = () => selectOption(btn, i);
+    optDiv.appendChild(btn);
+  });
 }
 
-function loadQuestions(){
- let qdiv=document.getElementById("questions");
- qdiv.innerHTML="";
- questions.forEach((x,i)=>{
-  qdiv.innerHTML+=`
-  <p>${i+1}. ${x.q[language]}</p>
-  <input id="ans${i}">
-  `;
- });
+function selectOption(btn, i) {
+  selected = i;
+  document.querySelectorAll(".option").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
 }
 
-function submitTest(){
- let score=0;
- questions.forEach((x,i)=>{
-  if(document.getElementById("ans"+i).value.toLowerCase()==x.a) score++;
- });
-
- let history=JSON.parse(localStorage.getItem("history")||"[]");
- history.push({date:new Date().toLocaleDateString(),score});
- localStorage.setItem("history",JSON.stringify(history));
-
- showResult(score,history);
-}
-
-function showResult(score,history){
- document.getElementById("resultCard").style.display="block";
- document.getElementById("scoreText").innerText="Score: "+score+"/10";
-
- if(history.length>=2){
-  let diff=history[history.length-2].score-score;
-  if(diff>=3){
-   document.getElementById("alertBox").innerHTML=
-   "<div class='alert'>⚠ Sudden memory decline detected! Guardian alert recommended.</div>";
+function nextQuestion() {
+  if (selected === null) return alert("Please select an answer");
+  if (selected === questions[current].answer) score++;
+  current++;
+  if (current < questions.length) {
+    showQuestion();
+  } else {
+    finishTest();
   }
- }
- drawChart(history);
 }
 
-function drawChart(data){
- let c=document.getElementById("chart");
- let ctx=c.getContext("2d");
- ctx.clearRect(0,0,c.width,c.height);
- let max=10;
- data.forEach((d,i)=>{
-  ctx.fillRect(i*30,100-(d.score*10),20,d.score*10);
- });
+function finishTest() {
+  document.getElementById("test").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+
+  let riskText = "";
+  let riskClass = "";
+
+  if (score === questions.length) {
+    riskText = "Low Risk";
+    riskClass = "risk-low";
+  } else if (score === 1) {
+    riskText = "Medium Risk";
+    riskClass = "risk-medium";
+  } else {
+    riskText = "High Risk";
+    riskClass = "risk-high";
+  }
+
+  document.getElementById("score").innerText = score + "/" + questions.length;
+  let riskSpan = document.getElementById("risk");
+  riskSpan.innerText = riskText;
+  riskSpan.className = riskClass;
+
+  localStorage.setItem("score", score);
+  localStorage.setItem("risk", riskText);
+}
+
+function openDashboard() {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("dScore").innerText = localStorage.getItem("score") || "No data";
+  document.getElementById("dRisk").innerText = localStorage.getItem("risk") || "No data";
+}
+
+function goHome() {
+  current = 0;
+  score = 0;
+  document.querySelectorAll(".card").forEach(c => c.classList.add("hidden"));
+  document.getElementById("home").classList.remove("hidden");
 }
 </script>
 
 </body>
 </html>
+
