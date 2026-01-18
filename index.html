@@ -3,53 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DementiaCare – Early Screening</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>DementiaCare</title>
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#eef2ff,#ffffff);
-    margin:0;
+  font-family: Arial, sans-serif;
+  background:#f4f7fb;
+  margin:0;
 }
-.container{max-width:900px;margin:auto;padding:20px}
-.card{
-    background:#fff;
-    border-radius:16px;
-    padding:25px;
-    margin-bottom:20px;
-    box-shadow:0 4px 10px rgba(0,0,0,.08)
+.container{
+  max-width:500px;
+  margin:40px auto;
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
 }
-.btn{
-    background:#4f46e5;
-    color:#fff;
-    padding:15px 25px;
-    border:none;
-    border-radius:12px;
-    font-size:1.1rem;
-    cursor:pointer
+button{
+  width:100%;
+  padding:12px;
+  background:#5b5fc7;
+  color:white;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  cursor:pointer;
 }
-.btn:hover{background:#3730a3}
-.hidden{display:none}
-.question{font-size:1.3rem;margin-bottom:15px}
-input{
-    width:100%;
-    padding:14px;
-    font-size:1.1rem;
-    border-radius:10px;
-    border:1px solid #ccc
+button:hover{background:#4a4ed0;}
+.question{margin:20px 0;}
+.option{
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  margin-top:10px;
+  cursor:pointer;
 }
-.progress{
-    height:10px;
-    background:#ddd;
-    border-radius:5px;
-    overflow:hidden;
-    margin-bottom:15px
+.option:hover{background:#eef;}
+.hidden{display:none;}
+.lang{
+  float:right;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:20px;
+  background:#eee;
 }
-.progress-fill{
-    height:100%;
-    background:#4f46e5;
-    width:0%
+img{
+  width:100%;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -57,68 +57,113 @@ input{
 <body>
 
 <div class="container">
+  <div class="lang" onclick="toggleLang()">English / ಕನ್ನಡ</div>
 
-<div class="card" id="home">
-    <h1>DementiaCare 🧠</h1>
-    <p>Early memory screening (Not a medical diagnosis)</p>
-    <button class="btn" onclick="startTest()">Start Memory Test</button>
-</div>
+  <h2 id="title">DementiaCare 🧠</h2>
+  <p id="subtitle">Early memory screening (Not a medical diagnosis)</p>
 
-<div class="card hidden" id="test">
-    <div class="progress"><div class="progress-fill" id="bar"></div></div>
-    <div id="qno"></div>
+  <button onclick="startTest()" id="startBtn">Start Memory Test</button>
+
+  <div id="quiz" class="hidden">
     <div class="question" id="question"></div>
-    <input id="answer" placeholder="Type your answer">
-    <br><br>
-    <button class="btn" onclick="next()">Next</button>
-</div>
+    <div id="options"></div>
+  </div>
 
-<div class="card hidden" id="result">
-    <h2>Your Score</h2>
-    <h1 id="score"></h1>
-    <canvas id="chart"></canvas>
-    <br>
-    <button class="btn" onclick="location.reload()">New Test</button>
-</div>
-
+  <div id="result" class="hidden"></div>
 </div>
 
 <script>
+let lang="en";
+let qIndex=0;
+let score=0;
+
 const questions=[
-"Which city do you live in?",
-"What is today's day?",
-"What is your son's name?",
-"Count backwards from 20",
-"What month is it?",
-"Name any three fruits",
-"What is your house color?",
-"What year is this?",
-"Who is the Prime Minister of India?",
-"What did you eat today?"
+{
+en:"What day is it today?",
+kn:"ಇಂದು ಯಾವ ದಿನ?",
+options:["Monday","Tuesday","Wednesday","Sunday"],
+answer:3
+},
+{
+en:"Which object is used to tell time?",
+kn:"ಸಮಯ ಹೇಳಲು ಯಾವ ವಸ್ತು ಬಳಸಲಾಗುತ್ತದೆ?",
+options:["Book","Clock","Plate","Pen"],
+answer:1
+},
+{
+en:"Identify this image",
+kn:"ಈ ಚಿತ್ರವನ್ನು ಗುರುತಿಸಿ",
+image:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/512px-Map_marker.svg.png",
+options:["Tree","Location","Animal","Food"],
+answer:1
+},
+{
+en:"What comes after 7?",
+kn:"7 ನಂತರ ಏನು ಬರುತ್ತದೆ?",
+options:["6","9","8","10"],
+answer:2
+}
 ];
 
-let i=0,correct=0,answers=[];
-
 function startTest(){
-    document.getElementById("home").classList.add("hidden");
-    document.getElementById("test").classList.remove("hidden");
-    showQ();
+  qIndex=0; score=0;
+  document.getElementById("startBtn").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  loadQ();
 }
 
-function showQ(){
-    document.getElementById("qno").innerText=`Question ${i+1}/10`;
-    document.getElementById("question").innerText=questions[i];
-    document.getElementById("answer").value="";
-    document.getElementById("bar").style.width=((i)/10*100)+"%";
+function loadQ(){
+  let q=questions[qIndex];
+  let qBox=document.getElementById("question");
+  let optBox=document.getElementById("options");
+
+  qBox.innerHTML="";
+  optBox.innerHTML="";
+
+  qBox.innerText=lang==="en"?q.en:q.kn;
+
+  if(q.image){
+    let img=document.createElement("img");
+    img.src=q.image;
+    qBox.appendChild(img);
+  }
+
+  q.options.forEach((opt,i)=>{
+    let div=document.createElement("div");
+    div.className="option";
+    div.innerText=opt;
+    div.onclick=()=>check(i);
+    optBox.appendChild(div);
+  });
 }
 
-function next(){
-    if(document.getElementById("answer").value.trim()!=="") correct++;
-    answers.push(correct);
-    i++;
-    if(i<10) showQ();
-    else finish();
+function check(i){
+  if(i===questions[qIndex].answer) score++;
+  qIndex++;
+  if(qIndex<questions.length) loadQ();
+  else showResult();
 }
 
-function finish(){
-    document.getElementBy
+function showResult(){
+  document.getElementById("quiz").classList.add("hidden");
+  let res=document.getElementById("result");
+  res.classList.remove("hidden");
+
+  let history=JSON.parse(localStorage.getItem("scores")||"[]");
+  history.push({date:new Date().toLocaleDateString(),score});
+  localStorage.setItem("scores",JSON.stringify(history));
+
+  res.innerHTML=`
+  <h3>Your Score: ${score}/${questions.length}</h3>
+  <p>Past Attempts:</p>
+  ${history.map(h=>`${h.date} → ${h.score}`).join("<br>")}
+  `;
+}
+
+function toggleLang(){
+  lang=lang==="en"?"kn":"en";
+}
+</script>
+
+</body>
+</html>
