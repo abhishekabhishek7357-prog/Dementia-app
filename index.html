@@ -70,21 +70,18 @@ footer {
 
 <div class="container">
 
-<!-- HOME -->
 <div class="card" id="home">
 <h2>Choose Mode</h2>
 <button onclick="startTest()">👴 Take Memory Test</button>
 <button onclick="openDashboard()">👨‍👩‍👧 Caregiver Dashboard</button>
 </div>
 
-<!-- TEST -->
 <div class="card hidden" id="test">
 <h2 id="question"></h2>
 <div id="options"></div>
 <button onclick="nextQuestion()">Next</button>
 </div>
 
-<!-- RESULT -->
 <div class="card hidden" id="result">
 <h2>Test Result</h2>
 <p>Your Score: <span id="score"></span></p>
@@ -92,7 +89,6 @@ footer {
 <button onclick="goHome()">Back to Home</button>
 </div>
 
-<!-- DASHBOARD -->
 <div class="card hidden" id="dashboard">
 <h2>Caregiver Dashboard</h2>
 <p>Last Score: <span id="dScore"></span></p>
@@ -109,19 +105,54 @@ Innovation & Design Thinking Project | VTU
 <script>
 let questions = [
   {
-    q: "What is your son's name?",
-    options: ["Ramesh", "Suresh", "Mahesh"],
+    q: "Which of the following is today’s day?",
+    options: ["Monday", "Wednesday", "Sunday", "Friday"],
+    answer: 2
+  },
+  {
+    q: "What city do you currently live in?",
+    options: ["Chennai", "Bengaluru", "Kolkata", "Jaipur"],
+    answer: 1
+  },
+  {
+    q: "Choose your correct phone number",
+    options: ["8861022530", "890373783993", "83838839940", "111183833339"],
     answer: 0
   },
   {
-    q: "Which city do you live in?",
-    options: ["Bengaluru", "Mumbai", "Delhi"],
+    q: "What is 7 + 5?",
+    options: ["11", "12", "13", "10"],
+    answer: 1
+  },
+  {
+    q: "Which of these animals says “meow”?",
+    options: ["Cow", "Dog", "Cat", "Bird"],
+    answer: 2
+  },
+  {
+    q: "What is this object shown? (Picture of a watch)",
+    options: ["Watch", "Book", "Shoe", "Tree"],
     answer: 0
   },
   {
-    q: "Which object is used to tell time?",
-    options: ["Clock", "Spoon", "Chair"],
+    q: "Look at this picture and choose the correct name (Apple)",
+    options: ["Orange", "Banana", "Apple", "Grapes"],
+    answer: 2
+  },
+  {
+    q: "Look at the shape and choose it",
+    options: ["▲", "■", "○", "★"],
     answer: 0
+  },
+  {
+    q: "What is your mother’s first name?",
+    options: ["Option A", "Option B", "Option C", "Option D"],
+    answer: 0
+  },
+  {
+    q: "What is your son’s name?",
+    options: ["Ravi", "Suresh", "Ramesh", "Mahesh"],
+    answer: 2
   }
 ];
 
@@ -174,10 +205,10 @@ function finishTest() {
   let riskText = "";
   let riskClass = "";
 
-  if (score === questions.length) {
+  if (score >= 8) {
     riskText = "Low Risk";
     riskClass = "risk-low";
-  } else if (score === 1) {
+  } else if (score >= 5) {
     riskText = "Medium Risk";
     riskClass = "risk-medium";
   } else {
