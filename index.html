@@ -1,816 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DementiaCare - Memory Screening</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DementiaCare – Early Screening</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        :root {
-            --primary: #4F46E5;
-            --primary-light: #6366F1;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --bg: #F8FAFC;
-            --card: #FFFFFF;
-            --text: #1E293B;
-            --text-light: #64748B;
-            --border: #E2E8F0;
-            --shadow: 0 4px 6px -1px rgba(0, 0,0,0.1);
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg) 0%, #E0E7FF 100%);
-            min-height: 100vh;
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--card);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .lang-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .lang-btn {
-            padding: 10px 20px;
-            border: 2px solid var(--border);
-            border-radius: 25px;
-            background: white;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .lang-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 200px;
-            justify-content: center;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #3730A3; transform: translateY(-2px); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 1.1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .question-card {
-            background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--primary);
-        }
-
-        .question-text {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .option-btn {
-            padding: 20px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .option-btn:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .option-btn.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: var(--border);
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            transition: width 0.3s;
-        }
-
-        .score-display {
-            font-size: 3rem;
-            font-weight: 800;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .score-good { color: var(--success); }
-        .score-warning { color: var(--warning); }
-        .score-danger { color: var(--danger); }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin-top: 20px;
-        }
-
-        .alert-banner {
-            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-            border: 1px solid var(--warning);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .hidden { display: none; }
-
-        @media (max-width: 768px) {
-            .container { padding: 15px; }
-            .header h1 { font-size: 2rem; }
-            .options-grid { grid-template-columns: 1fr; }
-            .btn { min-width: 100%; padding: 18px; }
-        }
-    </style>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#eef2ff,#ffffff);
+    margin:0;
+}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{
+    background:#fff;
+    border-radius:16px;
+    padding:25px;
+    margin-bottom:20px;
+    box-shadow:0 4px 10px rgba(0,0,0,.08)
+}
+.btn{
+    background:#4f46e5;
+    color:#fff;
+    padding:15px 25px;
+    border:none;
+    border-radius:12px;
+    font-size:1.1rem;
+    cursor:pointer
+}
+.btn:hover{background:#3730a3}
+.hidden{display:none}
+.question{font-size:1.3rem;margin-bottom:15px}
+input{
+    width:100%;
+    padding:14px;
+    font-size:1.1rem;
+    border-radius:10px;
+    border:1px solid #ccc
+}
+.progress{
+    height:10px;
+    background:#ddd;
+    border-radius:5px;
+    overflow:hidden;
+    margin-bottom:15px
+}
+.progress-fill{
+    height:100%;
+    background:#4f46e5;
+    width:0%
+}
+</style>
 </head>
+
 <body>
-    <div class="lang-toggle">
-        <button class="lang-btn active" data-lang="en">English</button>
-        <button class="lang-btn" data-lang="kn">ಕನ್ನಡ</button>
-    </div>
 
-    <div class="container">
-        <!-- Auth Section -->
-        <div id="auth-section" class="card">
-            <div class="header">
-                <h1 data-i18n="title">DementiaCare</h1>
-                <p data-i18n="subtitle">Early Memory Screening for Loved Ones</p>
-            </div>
-            
-            <div id="login-form">
-                <h2 data-i18n="login">Guardian Login</h2>
-                <div class="form-group">
-                    <label data-i18n="phone">Phone Number</label>
-                    <input type="tel" id="login-phone" placeholder="+91 9876543210">
-                </div>
-                <button class="btn btn-primary" onclick="loginGuardian()" data-i18n="loginBtn">Login</button>
-                <p style="text-align: center; margin-top: 20px;">
-                    <a href="#" onclick="showSignup()" data-i18n="newAccount">New Guardian Account?</a>
-                </p>
-            </div>
+<div class="container">
 
-            <div id="signup-form" class="hidden">
-                <h2 data-i18n="signup">Create Guardian Account</h2>
-                <div class="form-group">
-                    <label data-i18n="name">Full Name</label>
-                    <input type="text" id="guardian-name">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="age">Age</label>
-                    <input type="number" id="guardian-age" min="18">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="phone">Phone Number</label>
-                    <input type="tel" id="guardian-phone">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="state">State</label>
-                    <select id="guardian-state">
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" onclick="signupGuardian()" data-i18n="createAccount">Create Account</button>
-                <p style="text-align: center; margin-top: 20px;">
-                    <a href="#" onclick="showLogin()" data-i18n="haveAccount">Already have account?</a>
-                </p>
-            </div>
-        </div>
+<div class="card" id="home">
+    <h1>DementiaCare 🧠</h1>
+    <p>Early memory screening (Not a medical diagnosis)</p>
+    <button class="btn" onclick="startTest()">Start Memory Test</button>
+</div>
 
-        <!-- Dashboard -->
-        <div id="dashboard" class="hidden">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-                    <div>
-                        <h2 data-i18n="welcome">Welcome</h2>
-                        <p id="guardian-name-display" data-i18n="guardian"></p>
-                    </div>
-                    <div style="display: flex; gap: 15px;">
-                        <button class="btn btn-primary" onclick="startTest()" data-i18n="startTest">Start Memory Test</button>
-                        <button class="btn btn-warning" onclick="showCustomQuestions()" data-i18n="manageQuestions">Manage Questions</button>
-                        <button class="btn btn-danger" onclick="logout()" data-i18n="logout">Logout</button>
-                    </div>
-                </div>
-            </div>
+<div class="card hidden" id="test">
+    <div class="progress"><div class="progress-fill" id="bar"></div></div>
+    <div id="qno"></div>
+    <div class="question" id="question"></div>
+    <input id="answer" placeholder="Type your answer">
+    <br><br>
+    <button class="btn" onclick="next()">Next</button>
+</div>
 
-            <!-- Analytics Dashboard -->
-            <div class="card">
-                <h3 data-i18n="analytics">Test Analytics</h3>
-                <div class="chart-container">
-                    <canvas id="scoreChart"></canvas>
-                </div>
-                <div id="decline-alert" class="alert-banner hidden">
-                    <strong data-i18n="alertDetected">⚠️ Cognitive Decline Detected!</strong>
-                    <p data-i18n="alertDesc">Recent scores show significant drop. Please monitor closely.</p>
-                </div>
-            </div>
-        </div>
+<div class="card hidden" id="result">
+    <h2>Your Score</h2>
+    <h1 id="score"></h1>
+    <canvas id="chart"></canvas>
+    <br>
+    <button class="btn" onclick="location.reload()">New Test</button>
+</div>
 
-        <!-- Test Section -->
-        <div id="test-section" class="hidden">
-            <div class="card">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                </div>
-                <div style="text-align: center;">
-                    <div id="question-counter" style="font-size: 1.5rem; margin-bottom: 20px;">Question 1/10</div>
-                </div>
-                <div id="question-container" class="question-card"></div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled data-i18n="next">Next</button>
-                </div>
-            </div>
-        </div>
+</div>
 
-        <!-- Results Section -->
-        <div id="results-section" class="hidden">
-            <div class="card">
-                <h2 style="text-align: center;" data-i18n="results">Test Results</h2>
-                <div id="final-score" class="score-display score-good">85%</div>
-                <p id="score-message" style="text-align: center; font-size: 1.3rem; margin: 20px 0;"></p>
-                <div style="text-align: center;">
-                    <button class="btn btn-primary" onclick="backToDashboard()" data-i18n="newTest">New Test</button>
-                </div>
-            </div>
-        </div>
+<script>
+const questions=[
+"Which city do you live in?",
+"What is today's day?",
+"What is your son's name?",
+"Count backwards from 20",
+"What month is it?",
+"Name any three fruits",
+"What is your house color?",
+"What year is this?",
+"Who is the Prime Minister of India?",
+"What did you eat today?"
+];
 
-        <!-- Custom Questions Management -->
-        <div id="custom-questions-section" class="hidden">
-            <div class="card">
-                <h2 data-i18n="customQuestions">Custom Questions</h2>
-                <p data-i18n="customDesc">Add personalized questions for better accuracy</p>
-                
-                <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label data-i18n="questionText">Question</label>
-                        <input type="text" id="new-question-text">
-                    </div>
-                    <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label data-i18n="correctAnswer">Correct Answer</label>
-                        <input type="text" id="new-question-answer">
-                    </div>
-                    <button class="btn btn-success" onclick="addCustomQuestion()" data-i18n="addQuestion">Add Question</button>
-                </div>
+let i=0,correct=0,answers=[];
 
-                <div id="custom-questions-list"></div>
-            </div>
-        </div>
-    </div>
+function startTest(){
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("test").classList.remove("hidden");
+    showQ();
+}
 
-    <script>
-        // i18n - Multi-language support
-        const translations = {
-            en: {
-                title: 'DementiaCare',
-                subtitle: 'Early Memory Screening for Loved Ones',
-                login: 'Guardian Login',
-                phone: 'Phone Number',
-                loginBtn: 'Login',
-                newAccount: 'New Guardian Account?',
-                signup: 'Create Guardian Account',
-                name: 'Full Name',
-                age: 'Age',
-                state: 'State',
-                createAccount: 'Create Account',
-                haveAccount: 'Already have account?',
-                welcome: 'Welcome',
-                guardian: 'Guardian Dashboard',
-                startTest: 'Start Memory Test',
-                manageQuestions: 'Manage Questions',
-                logout: 'Logout',
-                analytics: 'Test Analytics',
-                alertDetected: '⚠️ Cognitive Decline Detected!',
-                alertDesc: 'Recent scores show significant drop. Please monitor closely.',
-                next: 'Next',
-                results: 'Test Results',
-                newTest: 'New Test',
-                customQuestions: 'Custom Questions',
-                customDesc: 'Add personalized questions for better accuracy',
-                questionText: 'Question',
-                correctAnswer: 'Correct Answer',
-                addQuestion: 'Add Question',
-                delete: 'Delete'
-            },
-            kn: {
-                title: 'ಡಿಮೆನ್ಷಿಯಾಕೇರ್',
-                subtitle: 'ಪ್ರಿಯರಿಗೆ ಮೆಮೊರಿ ಸ್ಕ್ರೀನಿಂಗ್',
-                login: 'ರಕ್ಷಕ ಲಾಗಿನ್',
-                phone: 'ಫೋನ್ ನಂಬರ್',
-                loginBtn: 'ಲಾಗಿನ್',
-                newAccount: 'ಹೊಸ ರಕ್ಷಕ ಖಾತೆ?',
-                signup: 'ರಕ್ಷಕ ಖಾತೆ ರಚಿಸಿ',
-                name: 'ಪೂರ್ಣ ಹೆಸರು',
-                age: 'ಆಯು',
-                state: 'ರಾಜ್ಯ',
-                createAccount: 'ಖಾತೆ ರಚಿಸಿ',
-                haveAccount: 'ಉದಾ ಖಾತೆ ಇದೆಯೇ?',
-                welcome: 'ಸ್ವಾಗತ',
-                guardian: 'ರಕ್ಷಕ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
-                startTest: 'ಮೆಮೊರಿ ಟೆಸ್ಟ್ ಆರಂಭಿಸಿ',
-                manageQuestions: 'ಪ್ರಶ್ನೆಗಳ ನಿರ್ವಹಣೆ',
-                logout: 'ಲಾಗ್‌ಔಟ್',
-                analytics: 'ಟೆಸ್ಟ್ ವಿಶ್ಲೇಷಣೆ',
-                alertDetected: '⚠️ ಜ್ಞಾನ ಸಾಮರ್ಥ್ಯ ಕುಸಿತ!',
-                alertDesc: 'ಇತ್ತೀಚಿನ ಸ್ಕೋರ್‌ಗಳಲ್ಲಿ ಗಂಭೀರ ಕುಸಿತ. ದಯವಿಟ್ಟು ಗಮನಿಸಿ.',
-                next: 'ಮುಂದೆ',
-                results: 'ಟೆಸ್ಟ್ ಫಲಿತಾಂಶಗಳು',
-                newTest: 'ಹೊಸ ಟೆಸ್ಟ್',
-                customQuestions: 'ಡಿಮೆನ್ಷನ್ ಪ್ರಶ್ನೆಗಳು',
-                customDesc: 'ಬೆಸ್ಟ್ ನಿಖರತೆಗೆ ವೈಯಕ್ತಿಕ ಪ್ರಶ್ನೆಗಳನ್ನು ಸೇರಿಸಿ',
-                questionText: 'ಪ್ರಶ್ನೆ',
-                correctAnswer: 'ಸರಿಯಾದ ಉತ್ತರ',
-                addQuestion: 'ಪ್ರಶ್ನೆ ಸೇರಿಸಿ',
-                delete: 'ಅಳಿಸಿ'
-            }
-        };
+function showQ(){
+    document.getElementById("qno").innerText=`Question ${i+1}/10`;
+    document.getElementById("question").innerText=questions[i];
+    document.getElementById("answer").value="";
+    document.getElementById("bar").style.width=((i)/10*100)+"%";
+}
 
-        let currentLang = 'en';
-        let currentGuardian = null;
-        let currentTest = null;
-        let testResults = [];
-        let customQuestions = [];
-        let scoreHistory = [];
+function next(){
+    if(document.getElementById("answer").value.trim()!=="") correct++;
+    answers.push(correct);
+    i++;
+    if(i<10) showQ();
+    else finish();
+}
 
-        // Default scientific questions for dementia screening
-        const defaultQuestions = [
-            { text: "What is today's date?", type: "text", answer: new Date().toLocaleDateString(), category: "orientation" },
-            { text: "What city do you live in?", type: "text", answer: "Shivamogga", category: "orientation" },
-            { text: "What is your phone number?", type: "text", answer: "", category: "personal" },
-            { text: "Name 3 objects you see around you", type: "text", answer: "any 3 objects", category: "attention" },
-            { text: "What season is it?", type: "text", answer: "Winter", category: "orientation" },
-            { text: "Count backwards from 20: 20, __, 18, __, 16...", type: "text", answer: "19,17", category: "attention" },
-            { text: "What day of the week is it?", type: "text", answer: new Date().toLocaleDateString('en-US', {weekday: 'long'}), category: "orientation" },
-            { text: "Repeat these words after me: Apple, Table, Penny", type: "text", answer: "apple table penny", category: "memory" },
-            { text: "What did I just ask you to repeat?", type: "text", answer: "apple table penny", category: "recall" },
-            { text: "Draw a clock showing 10 minutes past 11", type: "text", answer: "clock 11:10", category: "visuospatial" }
-        ];
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            updateLanguage();
-            checkAuth();
-        });
-
-        // Language toggle
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentLang = btn.dataset.lang;
-                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                updateLanguage();
-                saveData();
-            });
-        });
-
-        function updateLanguage() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.dataset.i18n;
-                if (translations[currentLang][key]) {
-                    el.textContent = translations[currentLang][key];
-                }
-            });
-        }
-
-        // Authentication
-        async function loginGuardian() {
-            const phone = document.getElementById('login-phone').value;
-            const guardians = JSON.parse(localStorage.getItem('guardians') || '[]');
-            const guardian = guardians.find(g => g.phone === phone);
-            
-            if (guardian) {
-                currentGuardian = guardian;
-                showSection('dashboard');
-                updateDashboard();
-            } else {
-                alert('Guardian not found. Please create account first.');
-            }
-        }
-
-        async function signupGuardian() {
-            const guardian = {
-                name: document.getElementById('guardian-name').value,
-                age: document.getElementById('guardian-age').value,
-                phone: document.getElementById('guardian-phone').value,
-                state: document.getElementById('guardian-state').value,
-                id: Date.now().toString()
-            };
-
-            if (!guardian.name || !guardian.phone) {
-                alert('Please fill all fields');
-                return;
-            }
-
-            const guardians = JSON.parse(localStorage.getItem('guardians') || '[]');
-            guardians.push(guardian);
-            localStorage.setItem('guardians', JSON.stringify(guardians));
-            
-            currentGuardian = guardian;
-            showSection('dashboard');
-            updateDashboard();
-        }
-
-        function showSignup() {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('signup-form').classList.remove('hidden');
-        }
-
-        function showLogin() {
-            document.getElementById('signup-form').classList.add('hidden');
-            document.getElementById('login-form').classList.remove('hidden');
-        }
-
-        function logout() {
-            currentGuardian = null;
-            showSection('auth-section');
-            document.getElementById('login-phone').value = '';
-        }
-
-        function checkAuth() {
-            const savedGuardian = localStorage.getItem('currentGuardian');
-            if (savedGuardian) {
-                currentGuardian = JSON.parse(savedGuardian);
-                showSection('dashboard');
-                updateDashboard();
-            }
-        }
-
-        // Dashboard
-        function updateDashboard() {
-            document.getElementById('guardian-name-display').textContent = 
-                `${translations[currentLang].welcome}, ${currentGuardian.name}!`;
-            
-            loadGuardianData();
-            renderChart();
-            checkDecline();
-        }
-
-        function loadGuardianData() {
-            const data = localStorage.getItem(`guardian_${currentGuardian.id}`) || '{}';
-            const parsed = JSON.parse(data);
-            scoreHistory = parsed.scoreHistory || [];
-            customQuestions = parsed.customQuestions || [];
-        }
-
-        function saveGuardianData() {
-            const data = {
-                scoreHistory,
-                customQuestions
-            };
-            localStorage.setItem(`guardian_${currentGuardian.id}`, JSON.stringify(data));
-        }
-
-        // Test System
-        function startTest() {
-            currentTest = {
-                questions: [...defaultQuestions, ...customQuestions].slice(0, 10),
-                current: 0,
-                answers: [],
-                startTime: new Date()
-            };
-            showSection('test-section');
-            showQuestion();
-        }
-
-        function showQuestion() {
-            const q = currentTest.questions[currentTest.current];
-            const container = document.getElementById('question-container');
-            const counter = document.getElementById('question-counter');
-            
-            counter.textContent = `Question ${currentTest.current + 1}/10`;
-            document.getElementById('progress-fill').style.width = 
-                `${((currentTest.current) / 10) * 100}%`;
-
-            if (q.type === 'text') {
-                container.innerHTML = `
-                    <div class="question-text">${q.text}</div>
-                    <input type="text" id="answer-input" style="font-size: 1.3rem; padding: 20px;" 
-                           placeholder="Type your answer here..." autocomplete="off">
-                `;
-                document.getElementById('next-btn').onclick = submitTextAnswer;
-            }
-
-            document.getElementById('next-btn').disabled = true;
-            document.getElementById('answer-input')?.focus();
-        }
-
-        function submitTextAnswer() {
-            const answer = document.getElementById('answer-input').value.trim().toLowerCase();
-            const q = currentTest.questions[currentTest.current];
-            const correct = answer.includes(q.answer.toLowerCase().replace(/[^a-z0-9]/g, '')) || 
-                           q.answer.toLowerCase().includes(answer.replace(/[^a-z0-9]/g, ''));
-            
-            currentTest.answers.push({
-                question: q.text,
-                given: answer,
-                correct: correct,
-                category: q.category
-            });
-
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            currentTest.current++;
-            
-            if (currentTest.current >= currentTest.questions.length) {
-                finishTest();
-            } else {
-                showQuestion();
-            }
-        }
-
-        function finishTest() {
-            const score = currentTest.answers.filter(a => a.correct).length / 10 * 100;
-            const result = {
-                date: new Date().toISOString(),
-                score: Math.round(score),
-                answers: currentTest.answers,
-                duration: Date.now() - currentTest.startTime
-            };
-
-            scoreHistory.unshift(result);
-            scoreHistory = scoreHistory.slice(0, 30); // Keep last 30 tests
-            
-            saveGuardianData();
-            localStorage.setItem('currentGuardian', JSON.stringify(currentGuardian));
-
-            // Send alert if significant decline
-            checkAndSendAlert(score);
-
-            showResults(result);
-        }
-
-        // Cognitive Decline Detection Algorithm
-        function checkDecline() {
-            if (scoreHistory.length < 3) return;
-
-            const recent = scoreHistory.slice(0, 3).map(r => r.score);
-            const past = scoreHistory.slice(3, 10).map(r => r.score);
-            
-            const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-            const pastAvg = past.length ? past.reduce((a, b) => a + b, 0) / past.length : recentAvg;
-            
-            const decline = pastAvg - recentAvg;
-            const declineAlert = document.getElementById('decline-alert');
-            
-            if (decline > 15) { // 15% decline threshold
-                declineAlert.classList.remove('hidden');
-                sendSMSAlert(`Decline detected: Recent avg ${recentAvg.toFixed(0)}% (was ${pastAvg.toFixed(0)}%)`);
-            } else {
-                declineAlert.classList.add('hidden');
-            }
-        }
-
-        function checkAndSendAlert(score) {
-            if (scoreHistory.length < 2) return;
-            
-            const prevScore = scoreHistory[1]?.score || 85;
-            if (score < prevScore - 20) {
-                sendSMSAlert(`Urgent: Score dropped to ${score}% from ${prevScore}%`);
-            }
-        }
-
-        // Mock SMS (Twilio-style)
-        function sendSMSAlert(message) {
-            console.log('🚨 SMS Alert:', `To: ${currentGuardian.phone}`, message);
-            // In production: 
-            // fetch('/api/sms', {method: 'POST', body: JSON.stringify({
-            //     to: currentGuardian.phone,
-            //     message: `DementiaCare Alert: ${message}`
-            // })})
-        }
-
-        function showResults(result) {
-            const scoreEl = document.getElementById('final-score');
-            const messageEl = document.getElementById('score-message');
-            
-            scoreEl.textContent = `${result.score}%`;
-            scoreEl.className = `score-display ${result.score > 80 ? 'score-good' : 
-                                       result.score > 60 ? 'score-warning' : 'score-danger'}`;
-            
-            messageEl.textContent = result.score > 80 ? 
-                'Excellent memory performance!' : 
-                result.score > 60 ? 
-                'Monitor regularly - some memory challenges noted' : 
-                'Cognitive decline detected - consult doctor immediately';
-
-            showSection('results-section');
-            renderChart();
-        }
-
-        // Charts
-        let scoreChart;
-        function renderChart() {
-            const ctx = document.getElementById('scoreChart')?.getContext('2d');
-            if (!ctx) return;
-
-            if (scoreChart) scoreChart.destroy();
-
-            const labels = scoreHistory.slice(0, 10).map((_, i) => `Test ${10-i}`);
-            const data = scoreHistory.slice(0, 10).map(r => r.score);
-
-            scoreChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Memory Score (%)',
-                        data,
-                        borderColor: 'rgb(79, 70, 229)',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-        }
-
-        // Custom Questions Management
-        function showCustomQuestions() {
-            showSection('custom-questions-section');
-            renderCustomQuestions();
-        }
-
-        function renderCustomQuestions() {
-            const container = document.getElementById('custom-questions-list');
-            container.innerHTML = customQuestions.map((q, i) => `
-                <div class="question-card" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>Q:</strong> ${q.text}<br>
-                        <small><strong>A:</strong> ${q.answer}</small>
-                    </div>
-                    <button class="btn btn-danger" onclick="deleteCustomQuestion(${i})" style="padding: 10px 20px; min-width: auto;">
-                        ${translations[currentLang].delete}
-                    </button>
-                </div>
-            `).join('') || '<p>No custom questions added yet.</p>';
-        }
-
-        function addCustomQuestion() {
-            const text = document.getElementById('new-question-text').value.trim();
-            const answer = document.getElementById('new-question-answer').value.trim();
-            
-            if (text && answer) {
-                customQuestions.push({ text, answer, category: 'personal' });
-                saveGuardianData();
-                renderCustomQuestions();
-                document.getElementById('new-question-text').value = '';
-                document.getElementById('new-question-answer').value = '';
-            }
-        }
-
-        function deleteCustomQuestion(index) {
-            customQuestions.splice(index, 1);
-            saveGuardianData();
-            renderCustomQuestions();
-        }
-
-        // Navigation
-        function showSection(sectionId) {
-            document.querySelectorAll('.card').forEach(card => card.classList.add('hidden'));
-            document.getElementById(sectionId).classList.remove('hidden');
-        }
-
-        function backToDashboard() {
-            showSection('dashboard');
-        }
-
-        // LocalStorage wrapper
-        function saveData() {
-            localStorage.setItem('currentLang', currentLang);
-            if (currentGuardian) {
-                localStorage.setItem('currentGuardian', JSON.stringify(currentGuardian));
-            }
-        }
-
-        function loadData() {
-            currentLang = localStorage.getItem('currentLang') || 'en';
-            document.querySelector(`[data-lang="${currentLang}"]`).classList.add('active');
-            updateLanguage();
-        }
-    </script>
-</body>
-</html>
-
-
+function finish(){
+    document.getElementBy
