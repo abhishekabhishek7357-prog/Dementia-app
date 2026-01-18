@@ -812,3 +812,23 @@
     </script>
 </body>
 </html>
+
+// For Render/Railway - MongoDB + Twilio  
+const express = require('express');  
+const mongoose = require('mongoose');  
+const cors = require('cors');  
+const twilio = require('twilio');  
+  
+const app = express();  
+app.use(cors());  
+app.use(express.json());  
+  
+// MongoDB Schemas (same logic as frontend)  
+// Guardian, TestResult, CustomQuestion models  
+  
+// SMS endpoint  
+app.post('/api/sms', async (req, res) => {  
+    const { to, message } = req.body;  
+    // Real Twilio integration  
+    // client.messages.create({ to, body: message })  
+});
